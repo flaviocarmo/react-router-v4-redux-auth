@@ -1,17 +1,19 @@
 import axios from 'axios'
 import { UNAUTH_USER, AUTH_USER, AUTH_ERROR, FETCH_MESSAGE } from './types'
-const ROOT_URL = 'http://localhost:3090'
+const ROOT_URL = 'http://localhost:1663/api'
 
 export function signinUser({email, password}) {
 
   return function (dispatch) {
 
     // submit email and password to server
-    const request = axios.post(`${ROOT_URL}/signin`, {email, password})
+    const request = axios.get(`${ROOT_URL}/token?username=${email}&password=${password}`)
     request
       .then(response => {
         // -Save the JWT token
-        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('token', response.data)
+
+        console.log(response.data);
 
         // -if request is good, we need to update state to indicate user is authenticated
         dispatch({type: AUTH_USER})
@@ -55,13 +57,13 @@ export function authError(error) {
 
 export function fetchMessage() {
   return function (dispatch) {
-    axios.get(ROOT_URL, {
-      headers: {authorization: localStorage.getItem('token')}
+    axios.get(`${ROOT_URL}/Home/`, {
+      headers: {authorization: `Bearer ${localStorage.getItem('token')}`}
     })
       .then(response => {
         dispatch({
           type: FETCH_MESSAGE,
-          payload: response.data.message
+          payload: response.data
         })
       })
   }
